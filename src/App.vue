@@ -62,6 +62,12 @@ export default {
       this.tutorialDialog = false;
       this.initGameBoard();
 
+      this.payload = {
+        lines: 0,
+        score: 0,
+        time: 0,
+      }
+
       // 按完按鈕後會有選取按鈕的行為,所以要取消選取，
       this.$refs.inp.focus();
       this.$refs.inp.blur();
@@ -434,11 +440,8 @@ export default {
       this.gameBoard = Array.from({ length: this.rows }, () => Array(this.columns).fill(0));
       this.tutorialMode = false;
       this.cheatMode = false;
-      this.payload = {
-        lines: 0,
-        score: 0,
-        time: 0,
-      }
+      this.block_count = 0;
+
       this.pageIndex = page;
     },
     checkGameOver() {
