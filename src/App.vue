@@ -512,10 +512,8 @@ export default {
 
     <!-- fontSize Start -->
     <section class="fz-section top-50">
-      <img src="./assets/imgs/image007.png" draggable="false" class="p-1 border border-dark" style="width:50px;"
-        @click="fs(-1)">
-      <img src="./assets/imgs/image008.png" draggable="false" class="p-1 border border-dark" style="width:50px;"
-        @click="fs(1)">
+      <img src="./imgs/image007.png" draggable="false" class="p-1 border border-dark" style="width:50px;" @click="fs(-1)">
+      <img src="./imgs/image008.png" draggable="false" class="p-1 border border-dark" style="width:50px;" @click="fs(1)">
     </section>
     <!-- fontSize End -->
 
@@ -523,7 +521,7 @@ export default {
     <!-- Start Page Start -->
     <section v-show="pageIndex === 0">
       <div class="d-flex flex-column justify-content-center align-items-center gap-3 vh-100">
-        <img src="./assets/imgs/tetris-logo.jpg" alt="" class="w-25 rounded">
+        <img src="./imgs/tetris-logo.jpg" alt="" class="w-25 rounded">
         <button class="btn1" :class="{ active: btn_active }" @click="startGame">開始遊戲</button>
         <button class="btn2" @click="startTutorial">教學</button>
 
@@ -566,7 +564,7 @@ export default {
           <div class="d-flex flex-column justify-content-between h-100">
             <!-- 暫停/繼續遊戲 Start -->
             <div class="d-flex flex-column gap-3">
-              <img src="./assets/imgs/tetris-logo.jpg" draggable="false" class="rounded" style="width: 100px;">
+              <img src="./imgs/tetris-logo.jpg" draggable="false" class="rounded" style="width: 100px;">
 
               <button v-if="tutorialMode" @click="resetGame(0)" class="btn2">退出教學</button>
               <button @click="pauseTimer" class="btn2" tabindex="-1">{{ gamePaused ? '繼續' :
