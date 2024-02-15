@@ -591,14 +591,14 @@ export default {
     <!-- fontSize Start -->
     <section class="fz-section top-50">
       <img
-        src="/public/image007.png"
+        src="/public/imgs/image007.png"
         draggable="false"
         class="p-1 border border-dark"
         style="width: 50px"
         @click="fs(-1)"
       />
       <img
-        src="/public/image008.png"
+        src="/public/imgs/image008.png"
         draggable="false"
         class="p-1 border border-dark"
         style="width: 50px"
@@ -610,9 +610,14 @@ export default {
     <!-- Start Page Start -->
     <section v-show="pageIndex === 0">
       <div
-        class="d-flex flex-column justify-content-center align-items-center gap-3 vh-100"
+        class="d-flex flex-column justify-content-center align-items-center gap-4 vh-100"
       >
-        <img src="/public/tetris-logo.jpg" alt="" class="w-25 rounded" />
+        <img
+          src="/public/imgs/tetris-logo.jpg"
+          alt=""
+          style="width: 200px"
+          class="rounded"
+        />
         <button class="btn1" :class="{ active: btn_active }" @click="startGame">
           開始遊戲
         </button>
@@ -631,6 +636,12 @@ export default {
             <option value="0.25">困難</option>
           </select>
         </div>
+        <img
+          src="/public/imgs/avatar.jpg"
+          alt=""
+          style="width: 150px"
+          class="position-absolute end-0 rounded"
+        />
       </div>
     </section>
     <!-- Start Page End -->
@@ -668,7 +679,7 @@ export default {
             <!-- 暫停/繼續遊戲 Start -->
             <article class="d-flex flex-column gap-3">
               <img
-                src="/public/tetris-logo.jpg"
+                src="/public/imgs/tetris-logo.jpg"
                 draggable="false"
                 class="rounded"
                 style="width: 100px"
