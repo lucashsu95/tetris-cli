@@ -591,14 +591,14 @@ export default {
     <!-- fontSize Start -->
     <section class="fz-section top-50">
       <img
-        src="./imgs/image007.png"
+        src="/public/image007.png"
         draggable="false"
         class="p-1 border border-dark"
         style="width: 50px"
         @click="fs(-1)"
       />
       <img
-        src="./imgs/image008.png"
+        src="/public/image008.png"
         draggable="false"
         class="p-1 border border-dark"
         style="width: 50px"
@@ -612,7 +612,7 @@ export default {
       <div
         class="d-flex flex-column justify-content-center align-items-center gap-3 vh-100"
       >
-        <img src="./imgs/tetris-logo.jpg" alt="" class="w-25 rounded" />
+        <img src="/public/tetris-logo.jpg" alt="" class="w-25 rounded" />
         <button class="btn1" :class="{ active: btn_active }" @click="startGame">
           開始遊戲
         </button>
@@ -668,7 +668,7 @@ export default {
             <!-- 暫停/繼續遊戲 Start -->
             <article class="d-flex flex-column gap-3">
               <img
-                src="./imgs/tetris-logo.jpg"
+                src="/public/tetris-logo.jpg"
                 draggable="false"
                 class="rounded"
                 style="width: 100px"
