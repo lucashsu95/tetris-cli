@@ -144,7 +144,7 @@ body {
 }
 
 @keyframes anime2 {
-  form {
+  from {
     box-shadow: 0 0 5px var(--color1);
   }
 
