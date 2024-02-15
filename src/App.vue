@@ -1,6 +1,5 @@
 <script>
 export default {
-
   data() {
     return {
       btn_active: false,
@@ -12,12 +11,13 @@ export default {
       blockSize: 30,
       currentPiece: {},
       nextPiece: {},
+      shadowPiece: {},
       gameBoard: [],
       gamePaused: false,
       tutorialMode: false, // 教學
       tutorialDialog: false,
       gamelevel: 0.25,
-      gamelevelData: { 0.25: '困難', 0.5: '一般', 1: '簡單' },
+      gamelevelData: { 0.25: "困難", 0.5: "一般", 1: "簡單" },
       pressedKey: null,
       block_count: 0,
       payload: {
@@ -32,22 +32,41 @@ export default {
         4: 1200,
       },
       Tetris_block: {
-        I: [[1, 1, 1, 1]],  // I 形
-        J: [[1, 0, 0], [1, 1, 1]],        // J 形
-        L: [[0, 0, 1], [1, 1, 1]],        // L 形
-        O: [[1, 1], [1, 1]],              // O 形
-        S: [[0, 1, 1], [1, 1, 0]],        // S 形
-        T: [[0, 1, 0], [1, 1, 1]],        // T 形
-        Z: [[1, 1, 0], [0, 1, 1]]         // Z 形
+        I: [[1, 1, 1, 1]], // I 形
+        J: [
+          [1, 0, 0],
+          [1, 1, 1],
+        ], // J 形
+        L: [
+          [0, 0, 1],
+          [1, 1, 1],
+        ], // L 形
+        O: [
+          [1, 1],
+          [1, 1],
+        ], // O 形
+        S: [
+          [0, 1, 1],
+          [1, 1, 0],
+        ], // S 形
+        T: [
+          [0, 1, 0],
+          [1, 1, 1],
+        ], // T 形
+        Z: [
+          [1, 1, 0],
+          [0, 1, 1],
+        ], // Z 形
       },
       gameInterval: null,
       gameTimeInterval: null,
       gameKeyInterval: null,
       gameOverCount: 0,
       ranks: [],
-      cheatInput: '',
+      cheatInput: "",
       cheatMode: false,
       cheatBlockIndex: 0,
+      blockDelay: 0,
       fsList: [17, 20, 26, 30, 40],
       fsIndex: 1,
     };
@@ -66,7 +85,7 @@ export default {
         lines: 0,
         score: 0,
         time: 0,
-      }
+      };
 
       // 按完按鈕後會有選取按鈕的行為,所以要取消選取，
       this.$refs.inp.focus();
@@ -74,12 +93,14 @@ export default {
     },
     initGameBoard() {
       this.gameOverCount = 0;
-      this.gameBoard = Array.from({ length: this.rows }, () => Array(this.columns).fill(0));
+      this.gameBoard = Array.from({ length: this.rows }, () =>
+        Array(this.columns).fill(0)
+      );
       this.generatePiece();
       this.gameLoop();
     },
     pauseTimer() {
-      this.gamePaused = !this.gamePaused
+      this.gamePaused = !this.gamePaused;
       if (this.gamePaused) {
         this.clearAllInterval();
       } else {
@@ -103,45 +124,44 @@ export default {
         this.moveDown();
       }, this.gamelevel * 1000);
 
-      // 遊戲時間 
+      // 遊戲時間
       this.gameTimeInterval = setInterval(() => {
         this.payload.time++;
-      }, 1000)
+      }, 1000);
 
       // 根據按下的鍵執行相應的操作
       this.gameKeyInterval = setInterval(() => {
         switch (this.pressedKey) {
-          case 'ArrowLeft':
+          case "ArrowLeft":
             this.moveLeft();
             break;
-          case 'ArrowRight':
+          case "ArrowRight":
             this.moveRight();
             break;
-          case 'ArrowDown':
+          case "ArrowDown":
             this.moveDown();
             break;
         }
       }, 70);
     },
     handleKeyPress(event) {
-
       // 檢查是否按下的是字母鍵
       if (event.key.length === 1 && event.key.match(/[a-z]/)) {
         // 存儲玩家輸入的字符
         this.cheatInput += event.key;
 
         // 檢查是否輸入了 "tetris"
-        if (this.cheatInput.includes('tetris')) {
+        if (this.cheatInput.includes("tetris")) {
           this.enableCheatMode();
-          this.cheatInput = '';  // 清空輸入
+          this.cheatInput = ""; // 清空輸入
         }
-      } else if (event.key == 'Tab' && this.cheatMode) {
+      } else if (event.key == "Tab" && this.cheatMode) {
         event.preventDefault();
         this.generatePiece(true);
-      } else if (event.key == 'ArrowUp') {
+      } else if (event.key == "ArrowUp") {
         this.rotate();
-        this.pressedKey = null
-      } else if (event.key == ' ') {
+        this.pressedKey = null;
+      } else if (event.key == " ") {
         this.dropPiece();
       } else {
         this.pressedKey = event.key;
@@ -150,23 +170,26 @@ export default {
     enableCheatMode() {
       this.cheatMode = true;
       // 在這裡執行作弊模式相關的邏輯，例如更改磚塊順序、顯示水印等
-      console.log('作弊模式已啟用');
+      console.log("作弊模式已啟用");
     },
     handleKeyRelease() {
       this.pressedKey = null;
     },
     generatePiece(changeNext = false) {
-
       const pieceTypes = Object.keys(this.Tetris_block);
 
       if (Object.keys(this.nextPiece).length === 0) {
-        let randomPieceType = pieceTypes[Math.floor(Math.random() * pieceTypes.length)];
+        let randomPieceType =
+          pieceTypes[Math.floor(Math.random() * pieceTypes.length)];
         let randomPiece = this.Tetris_block[randomPieceType];
         this.nextPiece = {
           type: randomPieceType,
           shape: randomPiece,
-          position: { i: 0, j: Math.floor((this.columns - randomPiece[0].length) / 2) },
-        }
+          position: {
+            i: 0,
+            j: Math.floor((this.columns - randomPiece[0].length) / 2),
+          },
+        };
       }
 
       // 當前方塊
@@ -176,6 +199,7 @@ export default {
           shape: this.nextPiece.shape,
           position: this.nextPiece.position,
         };
+        this.updateShadowPiece();
         this.block_count++;
       }
 
@@ -194,19 +218,16 @@ export default {
       this.nextPiece = {
         type: randomPieceType,
         shape: randomPiece,
-        position: { i: 0, j: Math.floor((this.columns - randomPiece[0].length) / 2) },
-      }
-
-      // 在生成新方塊時，同時更新 gameBoard
-      if (!changeNext) {
-        this.updateGameBoard();
-      }
+        position: {
+          i: 0,
+          j: Math.floor((this.columns - randomPiece[0].length) / 2),
+        },
+      };
     },
     moveDown() {
       const newPosition = { ...this.currentPiece.position };
       newPosition.i++;
 
-      // 清除舊的 currentPiece 在 gameBoard 上的位置
       this.clearPieceFromGameBoard();
 
       if (this.isValidMove(newPosition)) {
@@ -216,15 +237,20 @@ export default {
         this.generatePiece();
       }
 
-      // 在合併方塊並生成新方塊後，更新 gameBoard
-      this.updateGameBoard();
     },
     clearPieceFromGameBoard() {
       // 在移動前清除 currentPiece 在 gameBoard 上的位置
       for (let i = 0; i < this.currentPiece.shape.length; i++) {
         for (let j = 0; j < this.currentPiece.shape[0].length; j++) {
           if (this.currentPiece.shape[i][j] != 0) {
-            this.gameBoard[this.currentPiece.position.i + i][this.currentPiece.position.j + j] = 0;
+            this.gameBoard[this.currentPiece.position.i + i][
+              this.currentPiece.position.j + j
+            ] = 0;
+          }
+          if (this.shadowPiece.shape[i][j] != 0) {
+            this.gameBoard[this.shadowPiece.position.i + i][
+              this.shadowPiece.position.j + j
+            ] = 0;
           }
         }
       }
@@ -244,20 +270,19 @@ export default {
 
       // 檢查是否有滿行，並進行消除
       this.clearFullRows();
-
     },
     clearFullRows() {
-      let i = this.rows - 1
+      let i = this.rows - 1;
       let count = 0;
       while (i >= 0) {
         // 檢查一行是否滿的函數
-        if (this.gameBoard[i].every(cell => cell != 0)) {
+        if (this.gameBoard[i].every((cell) => cell != 0)) {
           // 如果這一行是滿的，則進行消除並讓上方方塊掉下來
           this.clearRow(i);
-          this.payload.lines++
+          this.payload.lines++;
           count++;
         } else {
-          i--
+          i--;
         }
       }
       if (count) {
@@ -289,12 +314,14 @@ export default {
         return false;
       }
 
+      const tetrKeys = new Set(Object.keys(this.Tetris_block));
+
       // 檢查是否與其他方塊重疊
       for (let i = 0; i < this.currentPiece.shape.length; i++) {
         for (let j = 0; j < this.currentPiece.shape[0].length; j++) {
           if (
             this.currentPiece.shape[i][j] != 0 &&
-            this.gameBoard[newPosition.i + i][newPosition.j + j] != 0
+            tetrKeys.has(this.gameBoard[newPosition.i + i][newPosition.j + j])
           ) {
             return false; // 重疊了，不合法的移動
           }
@@ -303,18 +330,41 @@ export default {
 
       return true; // 合法的移動
     },
+    updateShadowPiece() {
+      const newPosition = { ...this.currentPiece.position };
+      while (this.isValidMove(newPosition)) {
+        newPosition.i++;
+      }
+      newPosition.i--;
+
+      this.shadowPiece = {
+        type: this.currentPiece.type,
+        shape: this.currentPiece.shape,
+        position: newPosition,
+      };
+    },
     updateGameBoard() {
-      // 將 currentPiece 的形狀合併到 gameBoard 中
+      // 將 currentPiece 和 shadowPiece 的形狀合併到 gameBoard 中
       for (let i = 0; i < this.currentPiece.shape.length; i++) {
         for (let j = 0; j < this.currentPiece.shape[0].length; j++) {
-          if (this.currentPiece.shape[i][j] != 0) {
-            this.gameBoard[this.currentPiece.position.i + i][this.currentPiece.position.j + j] = this.currentPiece.type;
+          // 檢查 currentPiece 是否為 0，如果不是，將其加入到 gameBoard
+          if (this.currentPiece.shape[i][j] !== 0) {
+            this.gameBoard[this.currentPiece.position.i + i][
+              this.currentPiece.position.j + j
+            ] = this.currentPiece.type;
+          }
+          // 檢查 shadowPiece 是否為 0，如果不是，將其加入到 gameBoard
+          // console.log(this.shadowPiece);
+          if (this.shadowPiece.shape[i][j] !== 0) {
+            this.gameBoard[this.shadowPiece.position.i + i][
+              this.shadowPiece.position.j + j
+            ] = this.shadowPiece.type + "s";
           }
         }
       }
     },
     moveLeft() {
-      if (this.gamePaused) return
+      if (this.gamePaused) return;
       const newPosition = { ...this.currentPiece.position };
       newPosition.j--;
 
@@ -323,8 +373,6 @@ export default {
       if (this.isValidMove(newPosition)) {
         this.currentPiece.position = newPosition;
       }
-
-      this.updateGameBoard();
     },
     moveRight() {
       if (this.gamePaused) return;
@@ -336,8 +384,6 @@ export default {
       if (this.isValidMove(newPosition)) {
         this.currentPiece.position = newPosition;
       }
-
-      this.updateGameBoard();
     },
     moveDown() {
       if (this.gamePaused) return;
@@ -353,8 +399,6 @@ export default {
         this.fixPiece();
         this.generatePiece();
       }
-
-      this.updateGameBoard();
     },
     rotate() {
       if (this.gamePaused) return;
@@ -366,8 +410,6 @@ export default {
       if (this.isValidMoveForRotation(newPosition, newShape)) {
         this.currentPiece.shape = newShape;
       }
-
-      this.updateGameBoard();
     },
     rotateShape(shape) {
       // 實現旋轉邏輯，這裡僅為示例，實際情況根據你的方塊形狀和遊戲規則進行調整
@@ -393,9 +435,7 @@ export default {
         newPosition.i++;
       }
       newPosition.i--;
-      this.currentPiece.position = newPosition
-
-      this.updateGameBoard();
+      this.currentPiece.position = newPosition;
     },
     isValidMoveForRotation(newPosition, newShape) {
       // 檢查新的位置是否合法，避免超出邊界或與其他方塊重疊
@@ -429,15 +469,19 @@ export default {
     formatTime(seconds) {
       const minutes = Math.floor(seconds / 60);
       const remainingSeconds = seconds % 60;
-      return `${String(minutes).padStart(2, '0')}:${String(remainingSeconds).padStart(2, '0')}`;
+      return `${String(minutes).padStart(2, "0")}:${String(
+        remainingSeconds
+      ).padStart(2, "0")}`;
     },
     getNextPieceType(cell) {
-      return cell === 1 ? this.nextPiece.type : '';
+      return cell === 1 ? this.nextPiece.type : "";
     },
     resetGame(page) {
       this.clearAllInterval();
       this.gameOverCount = 0;
-      this.gameBoard = Array.from({ length: this.rows }, () => Array(this.columns).fill(0));
+      this.gameBoard = Array.from({ length: this.rows }, () =>
+        Array(this.columns).fill(0)
+      );
       this.tutorialMode = false;
       this.cheatMode = false;
       this.block_count = 0;
@@ -446,16 +490,18 @@ export default {
     },
     checkGameOver() {
       if (this.tutorialMode && this.payload.lines >= 1) {
-        alert('消除一行! 教學結束!');
+        alert("消除一行! 教學結束!");
         this.resetGame(0);
         this.btn_active = true;
         return;
       }
 
       const topRow = this.gameBoard[0];
-      this.gameOverCount = topRow.some(cell => cell !== 0) ? this.gameOverCount + 1 : 0;
+      this.gameOverCount = topRow.some((cell) => cell !== 0)
+        ? this.gameOverCount + 1
+        : 0;
 
-      if (this.gameOverCount >= 5) {
+      if (this.gameOverCount >= 10) {
         // 如果頂部所有元素都不等於 0，遊戲結束
 
         if (!this.tutorialMode && !this.cheatMode) {
@@ -465,15 +511,16 @@ export default {
       }
     },
     async onSubmit() {
-      const res = await fetch('register.php', {
+      const res = await fetch("register.php", {
         method: "POST",
-        body: JSON.stringify(this.payload)
-      })
-      const json = await res.json()
+        body: JSON.stringify(this.payload),
+      });
+      const json = await res.json();
 
       // 按分數降冪排列，再以清除行數升冪排列
-      json.results = json.results.sort((a, b) => b.score - a.score || a.lines - b.lines);
-
+      json.results = json.results.sort(
+        (a, b) => b.score - a.score || a.lines - b.lines
+      );
 
       // 如果多個玩家具有相同的分數和相同的清除行數，則他們在排名中獲得相同的位置
       let minNum = json.results[0].score;
@@ -483,55 +530,77 @@ export default {
         if (score < minNum) {
           minNum = score;
           count++;
-          if (count >= 2) break
+          if (count >= 2) break;
         }
       }
-      json.results = json.results.filter(x => x.score >= minNum || x.id === json.current_id)
-      this.ranks = json
-    }
+      json.results = json.results.filter(
+        (x) => x.score >= minNum || x.id === json.current_id
+      );
+      this.ranks = json;
+    },
   },
   watch: {
     currentPiece: {
       deep: true,
       handler() {
+        this.updateShadowPiece();
         this.updateGameBoard();
         this.checkGameOver();
       },
     },
   },
   mounted() {
-
-    window.addEventListener('keydown', this.handleKeyPress);
-    window.addEventListener('keyup', this.handleKeyRelease);
+    window.addEventListener("keydown", this.handleKeyPress);
+    window.addEventListener("keyup", this.handleKeyRelease);
 
     this.pageIndex = 0;
   },
-}
-
+};
 </script>
 
 <template>
-  <div class="container" :style="{ 'fontSize': this.fsList[this.fsIndex] + 'px' }">
-
+  <div
+    class="container"
+    :style="{ fontSize: this.fsList[this.fsIndex] + 'px' }"
+  >
     <!-- fontSize Start -->
     <section class="fz-section top-50">
-      <img src="./imgs/image007.png" draggable="false" class="p-1 border border-dark" style="width:50px;" @click="fs(-1)">
-      <img src="./imgs/image008.png" draggable="false" class="p-1 border border-dark" style="width:50px;" @click="fs(1)">
+      <img
+        src="./imgs/image007.png"
+        draggable="false"
+        class="p-1 border border-dark"
+        style="width: 50px"
+        @click="fs(-1)"
+      />
+      <img
+        src="./imgs/image008.png"
+        draggable="false"
+        class="p-1 border border-dark"
+        style="width: 50px"
+        @click="fs(1)"
+      />
     </section>
     <!-- fontSize End -->
 
-
     <!-- Start Page Start -->
     <section v-show="pageIndex === 0">
-      <div class="d-flex flex-column justify-content-center align-items-center gap-3 vh-100">
-        <img src="./imgs/tetris-logo.jpg" alt="" class="w-25 rounded">
-        <button class="btn1" :class="{ active: btn_active }" @click="startGame">開始遊戲</button>
+      <div
+        class="d-flex flex-column justify-content-center align-items-center gap-3 vh-100"
+      >
+        <img src="./imgs/tetris-logo.jpg" alt="" class="w-25 rounded" />
+        <button class="btn1" :class="{ active: btn_active }" @click="startGame">
+          開始遊戲
+        </button>
         <button class="btn2" @click="startTutorial">教學</button>
 
         <div class="d-flex align-items-center">
           遊戲難易度等級：
-          <select name="gamelevel" v-model="gamelevel" class="form-select border-2 border-primary"
-            style="width:max-content">
+          <select
+            name="gamelevel"
+            v-model="gamelevel"
+            class="form-select border-2 border-primary"
+            style="width: max-content"
+          >
             <option value="1">簡單</option>
             <option value="0.5" selected>一般</option>
             <option value="0.25">困難</option>
@@ -541,15 +610,18 @@ export default {
     </section>
     <!-- Start Page End -->
 
-
     <!-- Game Page Start -->
     <section v-show="pageIndex === 1">
-
       <!-- TutorialDialog Start -->
-      <article :class="{ active: tutorialDialog }" class="dialog1 d-flex flex-column">
-        <div class="dialog-body d-flex flex-column bg-white px-5 py-4 rounded-3 shadow">
+      <article
+        :class="{ active: tutorialDialog }"
+        class="dialog1 d-flex flex-column"
+      >
+        <div
+          class="dialog-body d-flex flex-column bg-white px-5 py-4 rounded-3 shadow"
+        >
           <h1>俄羅斯方塊教學</h1>
-          <hr>
+          <hr />
           <ol>
             <li>中間是遊戲主畫面</li>
             <li>左下方是記錄數值</li>
@@ -557,51 +629,66 @@ export default {
             <li>右上方會有下一個方塊的畫面</li>
             <li>右下方是上下左右鍵和快速降肉也可以使用鍵盤</li>
           </ol>
-          <button class="btn1" @click="startGame" tabindex="-1">開始遊戲</button>
+          <button class="btn1" @click="startGame" tabindex="-1">
+            開始遊戲
+          </button>
         </div>
       </article>
       <!-- TutorialDialog End -->
+
+      <!-- Main Start -->
       <div class="row vh-100">
         <div class="col-3">
-
           <div class="d-flex flex-column justify-content-between h-100">
             <!-- 暫停/繼續遊戲 Start -->
             <div class="d-flex flex-column gap-3">
-              <img src="./imgs/tetris-logo.jpg" draggable="false" class="rounded" style="width: 100px;">
+              <img
+                src="./imgs/tetris-logo.jpg"
+                draggable="false"
+                class="rounded"
+                style="width: 100px"
+              />
 
-              <button v-if="tutorialMode" @click="resetGame(0)" class="btn2">退出教學</button>
-              <button @click="pauseTimer" class="btn2" tabindex="-1">{{ gamePaused ? '繼續' :
-                '暫停' }}</button>
+              <button v-if="tutorialMode" @click="resetGame(0)" class="btn2">
+                退出教學
+              </button>
+              <button @click="pauseTimer" class="btn2" tabindex="-1">
+                {{ gamePaused ? "繼續" : "暫停" }}
+              </button>
             </div>
             <!-- 暫停/繼續遊戲 End -->
 
-
             <!-- 數據面板 Start -->
             <article>
-              <div class="mt-3">
-                時間: {{ formatTime(payload.time) }}
-              </div>
-              <div class="time mt-3">
-                行數: {{ payload.lines }} 行
-              </div>
-              <div class="time mt-3">
-                統計: {{ block_count }}
-              </div>
-              <div class="time mt-3">
-                分數: {{ payload.score }} 分
-              </div>
+              <div class="mt-3">時間: {{ formatTime(payload.time) }}</div>
+              <div class="time mt-3">行數: {{ payload.lines }} 行</div>
+              <div class="time mt-3">統計: {{ block_count }}</div>
+              <div class="time mt-3">分數: {{ payload.score }} 分</div>
             </article>
             <!-- 數據面板 End -->
           </div>
         </div>
 
         <div class="col-6">
-          <input v-show="tutorialMode" type="text" ref="inp" class="opacity-0" tabindex="-1">
+          <input
+            v-show="tutorialMode"
+            type="text"
+            ref="inp"
+            class="opacity-0"
+            tabindex="-1"
+          />
           <h2 v-if="cheatMode" class="text-center mt-3 cheat">CHEAT</h2>
           <!-- 遊戲主畫面 Start -->
-          <div v-for="(row, i) in gameBoard" class="d-flex justify-content-center">
-            <div v-for="(cell, j) in row" :class="[cell, { border: i > 1 || cell != 0 }]" class="text-center tetr-col">
-              <!-- {{ cell }} -->
+          <div
+            v-for="(row, i) in gameBoard"
+            class="d-flex justify-content-center"
+          >
+            <div
+              v-for="(cell, j) in row"
+              :class="[cell, { border: i > 1 || cell != 0 }]"
+              class="text-center tetr-col"
+            >
+              {{ cell }}
             </div>
           </div>
           <!-- 遊戲主畫面 End -->
@@ -611,8 +698,15 @@ export default {
           <!-- 下一個方塊 -->
           <div>
             下一個方塊：
-            <div v-for="row in nextPiece.shape" class="d-flex justify-content-center">
-              <div v-for="cell in row" :class="getNextPieceType(cell)" class="border text-center tetr-col">
+            <div
+              v-for="row in nextPiece.shape"
+              class="d-flex justify-content-center"
+            >
+              <div
+                v-for="cell in row"
+                :class="getNextPieceType(cell)"
+                class="border text-center tetr-col"
+              >
                 <!-- {{ cell }} -->
               </div>
             </div>
@@ -622,26 +716,33 @@ export default {
             <button @click="rotate" class="btn1" tabindex="-1">旋轉</button>
             <div class="d-flex gap-3 justify-content-between">
               <button @click="moveLeft" class="btn1" tabindex="-1">左移</button>
-              <button @click="moveRight" class="btn1" tabindex="-1">右移</button>
+              <button @click="moveRight" class="btn1" tabindex="-1">
+                右移
+              </button>
             </div>
             <button @click="moveDown" class="btn1" tabindex="-1">下移</button>
-            <button @click="dropPiece" class="btn1" tabindex="-1">空白鍵</button>
+            <button @click="dropPiece" class="btn1" tabindex="-1">
+              空白鍵
+            </button>
           </div>
         </div>
       </div>
+      <!-- Main End -->
     </section>
     <!-- Game Page End -->
 
     <!-- rank Page Start -->
     <section v-show="pageIndex === 2">
-      <div class="d-flex flex-column align-items-center justify-content-center vh-100">
+      <div
+        class="d-flex flex-column align-items-center justify-content-center vh-100"
+      >
         <h1 class="text-danger fw-bold">GameOver 遊戲結束</h1>
-        <div style="text-align: justify;">
+        <div style="text-align: justify">
           <h2>遊戲難易度等級：{{ gamelevelData[gamelevel] }}</h2>
           <h2>消除行數：{{ payload.lines }}行</h2>
           <h2>時間：{{ formatTime(payload.time) }}</h2>
         </div>
-        <hr>
+        <hr />
         <button class="btn1" @click="startGame">重啟遊戲</button>
         <button class="btn2 mt-2" @click="pageIndex = 0">回首頁</button>
 
@@ -654,7 +755,10 @@ export default {
             <th>行數</th>
             <th>分數</th>
           </thead>
-          <tr v-for="rank in ranks.results" :class="{ 'table-warning': rank.id === ranks.current_id }">
+          <tr
+            v-for="rank in ranks.results"
+            :class="{ 'table-warning': rank.id === ranks.current_id }"
+          >
             <td>{{ rank.id }}</td>
             <td>{{ formatTime(rank.time) }}</td>
             <td>{{ rank.lines }}</td>

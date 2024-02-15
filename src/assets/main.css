@@ -40,12 +40,9 @@ body {
 }
 
 .cheat {
-  text-shadow:
-    2px 2px 5px var(--color1),
-    4px 4px 10px var(--color1),
+  text-shadow: 2px 2px 5px var(--color1), 4px 4px 10px var(--color1),
     4px 5px 20px var(--color1);
   color: #fff;
-
 }
 
 /* btn Start */
@@ -63,11 +60,10 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: color .5s;
-
+  transition: color 0.5s;
 
   &::before {
-    content: '';
+    content: "";
     position: absolute;
     width: 50px;
     height: 50px;
@@ -79,13 +75,13 @@ body {
   }
 
   &::after {
-    content: '';
+    content: "";
     position: absolute;
     background: var(--color1);
     inset: 0;
     transform: scaleX(0);
     opacity: 0;
-    transition: transform .8s, opacity .7s;
+    transition: transform 0.8s, opacity 0.7s;
     z-index: -1;
   }
 }
@@ -125,7 +121,6 @@ body {
   top: 0;
   left: 0;
   cursor: pointer;
-
 }
 
 @keyframes anime1 {
@@ -135,7 +130,7 @@ body {
   }
 
   99% {
-    transform: scale(3.5);
+    transform: scale(2);
     opacity: 0;
   }
 
@@ -147,7 +142,6 @@ body {
 .btn1.active {
   animation: anime2 1s infinite alternate;
 }
-
 
 @keyframes anime2 {
   form {
@@ -167,12 +161,12 @@ body {
   justify-content: center;
   align-items: center;
   transform: scale(0);
-  transition: transform .5s;
+  transition: transform 0.5s;
   isolation: isolate;
   z-index: 2;
 
   &::before {
-    content: '';
+    content: "";
     inset: 0;
     position: absolute;
     z-index: -1;
@@ -183,11 +177,9 @@ body {
     border: 2px solid #ccc;
   }
 
-
   &.active {
     transform: scale(1);
   }
-
 }
 
 /* Dialog End */
@@ -218,4 +210,39 @@ body {
 
 .Z {
   background: red;
+}
+
+.Is {
+  background: #00ffff;
+  opacity: 0.5;
+}
+
+.Js {
+  background: blue;
+  opacity: 0.5;
+}
+
+.Ls {
+  background: #ffa500;
+  opacity: 0.5;
+}
+
+.Os {
+  background: yellow;
+  opacity: 0.5;
+}
+
+.Ss {
+  background: #0f0;
+  opacity: 0.5;
+}
+
+.Ts {
+  background: #a0f;
+  opacity: 0.5;
+}
+
+.Zs {
+  background: red;
+  opacity: 0.5;
 }
