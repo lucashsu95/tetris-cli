@@ -12,6 +12,7 @@ export default {
       currentPiece: {},
       nextPiece: {},
       shadowPiece: {},
+      change_type: null,
       gameBoard: [],
       gamePaused: false,
       tutorialMode: false, // 教學
@@ -146,6 +147,7 @@ export default {
     },
     handleKeyPress(event) {
       // 檢查是否按下的是字母鍵
+
       if (event.key.length === 1 && event.key.match(/[a-z]/)) {
         // 存儲玩家輸入的字符
         this.cheatInput += event.key;
@@ -161,6 +163,12 @@ export default {
       } else if (event.key == "ArrowUp") {
         this.rotate();
         this.pressedKey = null;
+      } else if (
+        event.key == "Shift" &&
+        this.pageIndex === 1 &&
+        !this.gamePaused
+      ) {
+        this.changeBlock();
       } else if (event.key == " ") {
         this.dropPiece();
       } else {
@@ -229,14 +237,12 @@ export default {
       newPosition.i++;
 
       this.clearPieceFromGameBoard();
-
       if (this.isValidMove(newPosition)) {
         this.currentPiece.position = newPosition;
       } else {
         this.fixPiece();
         this.generatePiece();
       }
-
     },
     clearPieceFromGameBoard() {
       // 在移動前清除 currentPiece 在 gameBoard 上的位置
@@ -247,11 +253,13 @@ export default {
               this.currentPiece.position.j + j
             ] = 0;
           }
-          if (this.shadowPiece.shape[i][j] != 0) {
-            this.gameBoard[this.shadowPiece.position.i + i][
-              this.shadowPiece.position.j + j
-            ] = 0;
-          }
+          try {
+            if (this.shadowPiece.shape[i][j] != 0) {
+              this.gameBoard[this.shadowPiece.position.i + i][
+                this.shadowPiece.position.j + j
+              ] = 0;
+            }
+          } catch (error) {}
         }
       }
     },
@@ -345,6 +353,7 @@ export default {
     },
     updateGameBoard() {
       // 將 currentPiece 和 shadowPiece 的形狀合併到 gameBoard 中
+      const tetrKeys = new Set(Object.keys(this.Tetris_block));
       for (let i = 0; i < this.currentPiece.shape.length; i++) {
         for (let j = 0; j < this.currentPiece.shape[0].length; j++) {
           // 檢查 currentPiece 是否為 0，如果不是，將其加入到 gameBoard
@@ -354,14 +363,31 @@ export default {
             ] = this.currentPiece.type;
           }
           // 檢查 shadowPiece 是否為 0，如果不是，將其加入到 gameBoard
-          // console.log(this.shadowPiece);
-          if (this.shadowPiece.shape[i][j] !== 0) {
-            this.gameBoard[this.shadowPiece.position.i + i][
-              this.shadowPiece.position.j + j
-            ] = this.shadowPiece.type + "s";
-          }
+          try {
+            if (
+              this.shadowPiece.shape[i][j] !== 0 &&
+              !tetrKeys.has(this.shadowPiece.shape[i][j])
+            ) {
+              this.gameBoard[this.shadowPiece.position.i + i][
+                this.shadowPiece.position.j + j
+              ] = this.shadowPiece.type + "s";
+            }
+          } catch (error) {}
         }
       }
+    },
+    changeBlock() {
+      const type = this.currentPiece.type;
+      this.clearPieceFromGameBoard();
+      if (this.change_type) {
+        this.currentPiece.position.i = 0;
+        this.currentPiece.type = this.change_type;
+        this.currentPiece.shape = this.Tetris_block[this.change_type];
+      } else {
+        this.generatePiece();
+      }
+      this.change_type = type;
+      console.log(this.change_type);
     },
     moveLeft() {
       if (this.gamePaused) return;
@@ -438,10 +464,6 @@ export default {
       this.currentPiece.position = newPosition;
     },
     isValidMoveForRotation(newPosition, newShape) {
-      // 檢查新的位置是否合法，避免超出邊界或與其他方塊重疊
-      // 這裡的邏輯需要根據你的具體遊戲規則來實現
-      // 這裡只是一個簡單的示例，可能需要更複雜的邏輯
-
       // 檢查是否超出邊界
       if (
         newPosition.i < 0 ||
@@ -473,8 +495,8 @@ export default {
         remainingSeconds
       ).padStart(2, "0")}`;
     },
-    getNextPieceType(cell) {
-      return cell === 1 ? this.nextPiece.type : "";
+    getPieceType(cell, type) {
+      return cell === 1 ? type : "";
     },
     resetGame(page) {
       this.clearAllInterval();
@@ -484,6 +506,8 @@ export default {
       );
       this.tutorialMode = false;
       this.cheatMode = false;
+      this.change_type = null;
+      this.shadowPiece = {};
       this.block_count = 0;
 
       this.pageIndex = page;
@@ -501,12 +525,13 @@ export default {
         ? this.gameOverCount + 1
         : 0;
 
-      if (this.gameOverCount >= 10) {
+      if (this.gameOverCount >= 5) {
         // 如果頂部所有元素都不等於 0，遊戲結束
 
         if (!this.tutorialMode && !this.cheatMode) {
           // this.onSubmit();
         }
+        alert("Game over !");
         this.resetGame(2);
       }
     },
@@ -560,7 +585,7 @@ export default {
 
 <template>
   <div
-    class="container"
+    class="container d-flex justify-content-center"
     :style="{ fontSize: this.fsList[this.fsIndex] + 'px' }"
   >
     <!-- fontSize Start -->
@@ -639,9 +664,9 @@ export default {
       <!-- Main Start -->
       <div class="row vh-100">
         <div class="col-3">
-          <div class="d-flex flex-column justify-content-between h-100">
+          <div class="d-flex gap-3 flex-column align-items-end h-100">
             <!-- 暫停/繼續遊戲 Start -->
-            <div class="d-flex flex-column gap-3">
+            <article class="d-flex flex-column gap-3">
               <img
                 src="./imgs/tetris-logo.jpg"
                 draggable="false"
@@ -655,8 +680,23 @@ export default {
               <button @click="pauseTimer" class="btn2" tabindex="-1">
                 {{ gamePaused ? "繼續" : "暫停" }}
               </button>
-            </div>
+            </article>
             <!-- 暫停/繼續遊戲 End -->
+
+            <!-- 交換方塊 Start -->
+            <article>
+              <div
+                v-for="row in Tetris_block[change_type]"
+                class="d-flex justify-content-center"
+              >
+                <div
+                  v-for="cell in row"
+                  :class="getPieceType(cell, change_type)"
+                  class="border text-center tetr-col"
+                ></div>
+              </div>
+            </article>
+            <!-- 交換方塊 End -->
 
             <!-- 數據面板 Start -->
             <article>
@@ -688,13 +728,13 @@ export default {
               :class="[cell, { border: i > 1 || cell != 0 }]"
               class="text-center tetr-col"
             >
-              {{ cell }}
+              <!-- {{ cell }} -->
             </div>
           </div>
           <!-- 遊戲主畫面 End -->
         </div>
 
-        <div class="col-3 d-flex flex-column justify-content-between">
+        <div class="col-3 d-flex flex-column">
           <!-- 下一個方塊 -->
           <div>
             下一個方塊：
@@ -704,7 +744,7 @@ export default {
             >
               <div
                 v-for="cell in row"
-                :class="getNextPieceType(cell)"
+                :class="getPieceType(cell, nextPiece.type)"
                 class="border text-center tetr-col"
               >
                 <!-- {{ cell }} -->
@@ -714,12 +754,8 @@ export default {
           </div>
           <div class="d-flex flex-column gap-3">
             <button @click="rotate" class="btn1" tabindex="-1">旋轉</button>
-            <div class="d-flex gap-3 justify-content-between">
-              <button @click="moveLeft" class="btn1" tabindex="-1">左移</button>
-              <button @click="moveRight" class="btn1" tabindex="-1">
-                右移
-              </button>
-            </div>
+            <button @click="moveLeft" class="btn1" tabindex="-1">左移</button>
+            <button @click="moveRight" class="btn1" tabindex="-1">右移</button>
             <button @click="moveDown" class="btn1" tabindex="-1">下移</button>
             <button @click="dropPiece" class="btn1" tabindex="-1">
               空白鍵
